@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/Necrom4/sbb-tui/compare/v1.0.2...v1.0.3) (2026-03-01)
+
+
+### Bug Fixes
+
+* use correct homebrew-tap master branch ([95e1990](https://github.com/Necrom4/sbb-tui/commit/95e199054433b75269f256ae962c6d5b84fe2705))
+
 ## [1.0.2](https://github.com/Necrom4/sbb-tui/compare/v1.0.1...v1.0.2) (2026-03-01)
 
 
