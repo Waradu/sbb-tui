@@ -45,5 +45,5 @@ brews:
     repository:
       owner: Necrom4
       name: homebrew-tap
-      branch: main
+      branch: master
       token: "{{ .Env.GH_TOKEN }}"
