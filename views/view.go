@@ -40,22 +40,6 @@ const (
 	fullConnPaddV = 1
 )
 
-const (
-	// Icons
-	filledDot = "●"
-	hollowDot = "○"
-	horzLine  = "─"
-	vertLine  = "│"
-
-	arrIcon  = "󰗔"
-	dptIcon  = ""
-	pltIcon  = "󱀓"
-	srchIcon = ""
-	swpIcon  = ""
-	vhcIcon  = ""
-	wlkIcon  = ""
-)
-
 var (
 	// Colors
 	sbbWhite      = lipgloss.Color("#FFFFFF")
@@ -123,6 +107,71 @@ type Config struct {
 	Date          string
 	Time          string
 	IsArrivalTime bool
+	NoNerdFont    bool
+}
+
+type iconSet struct {
+	// Mode-dependent (Nerd Font vs Unicode fallback)
+	arr    string
+	dpt    string
+	plt    string
+	srch   string
+	swp    string
+	vhc    string
+	wlk    string
+	prompt string
+
+	// Mode-invariant
+	twrds     string
+	filledDot string
+	hollowDot string
+	horzLine  string
+	vertLine  string
+	keyTab    string
+	keyEnter  string
+	keySpace  string
+	keyUpDw   string
+	keyRight  string
+	keyEsc    string
+}
+
+func newIconSet(noNerdFont bool) iconSet {
+	icons := iconSet{
+		// Shared symbols
+		twrds:     "→",
+		filledDot: "●",
+		hollowDot: "○",
+		horzLine:  "─",
+		vertLine:  "│",
+		keyTab:    "⇥",
+		keyEnter:  "↵",
+		keySpace:  "␣",
+		keyUpDw:   "↕",
+		keyRight:  "→",
+		keyEsc:    "⎋",
+	}
+
+	if noNerdFont {
+		icons.arr = "↘"
+		icons.dpt = "↗"
+		icons.plt = "Pl."
+		icons.srch = "⌕"
+		icons.swp = "⇋"
+		icons.vhc = "×"
+		icons.wlk = "Walk:"
+		icons.prompt = "> "
+	} else {
+		icons.arr = "󰗔"
+		icons.dpt = ""
+		icons.plt = "󱀓"
+		icons.srch = ""
+		icons.swp = ""
+		icons.vhc = ""
+		icons.wlk = ""
+		icons.prompt = " "
+	}
+
+	return icons
 }
 
 type DataMsg struct {
@@ -142,6 +191,7 @@ type model struct {
 	resultIndex   int
 	headerOrder   []focusable
 	inputs        []textinput.Model
+	icons         iconSet
 	isArrivalTime bool
 	connections   []models.Connection
 	loading       bool
@@ -164,6 +214,7 @@ func InitialModel(cfg Config) model {
 			{KindButton, "search", -1},
 		},
 		inputs:        make([]textinput.Model, 4),
+		icons:         newIconSet(cfg.NoNerdFont),
 		isArrivalTime: cfg.IsArrivalTime,
 	}
 
@@ -176,7 +227,7 @@ func InitialModel(cfg Config) model {
 		switch i {
 		case 0:
 			t.Placeholder = "From"
-			t.Prompt = " "
+			t.Prompt = m.icons.prompt
 			t.ShowSuggestions = true
 			t.KeyMap.AcceptSuggestion = key.NewBinding(key.WithKeys("right"))
 			if cfg.From != "" {
@@ -185,7 +236,7 @@ func InitialModel(cfg Config) model {
 			t.Focus()
 		case 1:
 			t.Placeholder = "To"
-			t.Prompt = " "
+			t.Prompt = m.icons.prompt
 			t.ShowSuggestions = true
 			t.KeyMap.AcceptSuggestion = key.NewBinding(key.WithKeys("right"))
 			if cfg.To != "" {
@@ -193,7 +244,7 @@ func InitialModel(cfg Config) model {
 			}
 		case 2:
 			t.Placeholder = now.Format("2006-01-02")
-			t.Prompt = " "
+			t.Prompt = m.icons.prompt
 			t.Width = 12
 			t.CharLimit = 10
 			if cfg.Date != "" {
@@ -201,7 +252,7 @@ func InitialModel(cfg Config) model {
 			}
 		case 3:
 			t.Placeholder = now.Format("15:04")
-			t.Prompt = " "
+			t.Prompt = m.icons.prompt
 			t.Width = 7
 			t.CharLimit = 5
 			if cfg.Time != "" {
@@ -538,12 +589,12 @@ func (m model) renderHeader() string {
 
 func (m model) renderHelpBar() string {
 	keys := []struct{ key, desc string }{
-		{"󰌒", "navigate header"},
-		{"", "search"},
-		{"󱁐", "toggle"},
-		{"󰹹", "select result"},
-		{"", "complete suggestion"},
-		{"󱊷", "quit"},
+		{m.icons.keyTab, "navigate header"},
+		{m.icons.keyEnter, "search"},
+		{m.icons.keySpace, "toggle"},
+		{m.icons.keyUpDw, "select result"},
+		{m.icons.keyRight, "complete suggestion"},
+		{m.icons.keyEsc, "quit"},
 	}
 
 	var parts []string
@@ -572,15 +623,15 @@ func (m model) renderHeaderItem(idx int) string {
 	icon := " "
 	switch item.id {
 	case "swap":
-		icon = swpIcon
+		icon = m.icons.swp
 	case "isArrivalTime":
 		if m.isArrivalTime {
-			icon = arrIcon
+			icon = m.icons.arr
 		} else {
-			icon = dptIcon
+			icon = m.icons.dpt
 		}
 	case "search":
-		icon = srchIcon
+		icon = m.icons.srch
 	}
 	return style.Render(icon)
 }
@@ -661,27 +712,27 @@ func (m model) renderJourneySection(section models.Section, width int, isFirst, 
 	depStation := section.Departure.Station.Name
 	depPlatform := section.Departure.Platform
 
-	depDot := hollowDot
+	depDot := m.icons.hollowDot
 	if isFirst {
-		depDot = filledDot
+		depDot = m.icons.filledDot
 	}
 
 	depLine := m.formatStationLine(depTime, depDelay, depDot, depStation, depPlatform, width, timeCol, delayCol, symbolCol, true)
 	lines = append(lines, depLine)
 
 	indent := strings.Repeat(" ", timeCol+delayCol)
-	spacingLine := fmt.Sprintf("%s  %s", indent, vertLine)
+	spacingLine := fmt.Sprintf("%s  %s", indent, m.icons.vertLine)
 	lines = append(lines, spacingLine)
 
-	vehicleIcon := noStyle.Background(sbbBlue).Foreground(sbbWhite).Render(" " + vhcIcon + " ")
+	vehicleIcon := noStyle.Background(sbbBlue).Foreground(sbbWhite).Render(" " + m.icons.vhc + " ")
 	vehicleCategory := noStyle.Background(sbbRed).Foreground(sbbWhite).Bold(true).
 		Render(section.Journey.Category + " " + section.Journey.Number)
 	company := noStyle.Background(sbbWhite).Foreground(sbbBlack).
 		Render(section.Journey.Operator)
-	vehicleLine := fmt.Sprintf("%s  %s  %s %s %s", indent, vertLine, vehicleIcon, vehicleCategory, company)
+	vehicleLine := fmt.Sprintf("%s  %s  %s %s %s", indent, m.icons.vertLine, vehicleIcon, vehicleCategory, company)
 	lines = append(lines, vehicleLine)
 
-	destLine := fmt.Sprintf("%s  %s   → %s", indent, vertLine, section.Journey.To)
+	destLine := fmt.Sprintf("%s  %s   %s %s", indent, m.icons.vertLine, m.icons.twrds, section.Journey.To)
 	lines = append(lines, destLine)
 
 	lines = append(lines, spacingLine)
@@ -691,9 +742,9 @@ func (m model) renderJourneySection(section models.Section, width int, isFirst, 
 	arrStation := section.Arrival.Station.Name
 	arrPlatform := section.Arrival.Platform
 
-	arrSymbol := vertLine
+	arrSymbol := m.icons.vertLine
 	if isLast {
-		arrSymbol = filledDot
+		arrSymbol = m.icons.filledDot
 	}
 
 	arrLine := m.formatStationLine(arrTime, arrDelay, arrSymbol, arrStation, arrPlatform, width, timeCol, delayCol, symbolCol, false)
@@ -729,7 +780,7 @@ func (m model) renderWalkSection(section models.Section) []string {
 		walkDuration = utils.RenderLink(walkDuration, url)
 	}
 
-	walkLine := fmt.Sprintf("           %s %s", wlkIcon, walkDuration)
+	walkLine := fmt.Sprintf("           %s %s", m.icons.wlk, walkDuration)
 	lines = append(lines, walkLine)
 
 	return lines
@@ -756,8 +807,8 @@ func (m model) formatStationLine(timeStr string, delay int, symbol, station, pla
 	platformPart := ""
 	platformVisibleLen := 0
 	if platform != "" {
-		platformPart = textStyle.Render(fmt.Sprintf("%s %s", pltIcon, platform))
-		platformVisibleLen = len(platform) + 3
+		platformPart = textStyle.Render(fmt.Sprintf("%s %s", m.icons.plt, platform))
+		platformVisibleLen = len(platform) + len(m.icons.plt) + 1
 	}
 
 	fixedWidth := timeCol + delayCol + symbolCol + platformVisibleLen
@@ -798,7 +849,7 @@ func (m model) renderSimpleConnection(c models.Connection, index int, width int)
 		}
 	}
 
-	vehicleIcon := noStyle.Background(sbbBlue).Foreground(sbbWhite).Render(" " + vhcIcon + " ")
+	vehicleIcon := noStyle.Background(sbbBlue).Foreground(sbbWhite).Render(" " + m.icons.vhc + " ")
 	vehicleCategory := noStyle.Background(sbbRed).Foreground(sbbWhite).Bold(true).
 		Render(c.Sections[firstVehicle].Journey.Category + " " + c.Sections[firstVehicle].Journey.Number)
 	company := noStyle.Background(sbbWhite).Foreground(sbbBlack).
@@ -814,13 +865,13 @@ func (m model) renderSimpleConnection(c models.Connection, index int, width int)
 	arrivalDelay := formatDelay(c.Sections[firstVehicle].Arrival.Delay)
 
 	stopsLineWidth := max(width-stopsLineFixedWidth, stopsLineMinWidth)
-	stopsLine := noStyle.Bold(true).Render(renderStopsLine(c, stopsLineWidth))
+	stopsLine := noStyle.Bold(true).Render(m.renderStopsLine(c, stopsLineWidth))
 
 	platformOrWalk := ""
 	if len(c.FromData.Platform) > 0 {
-		platformOrWalk = pltIcon + " " + noStyle.Render(c.FromData.Platform)
+		platformOrWalk = m.icons.plt + " " + noStyle.Render(c.FromData.Platform)
 	} else if c.Sections[0].Walk != nil {
-		platformOrWalk = wlkIcon + " " + noStyle.Render(
+		platformOrWalk = m.icons.wlk + " " + noStyle.Render(
 			fmt.Sprintf("%vm", c.Sections[0].Arrival.Arrival.Sub(c.Sections[0].Departure.Departure).Minutes()),
 		)
 	}
@@ -874,9 +925,9 @@ func formatDelay(delay int) string {
 	return ""
 }
 
-func renderStopsLine(c models.Connection, totalWidth int) string {
+func (m model) renderStopsLine(c models.Connection, totalWidth int) string {
 	if len(c.Sections) == 0 {
-		return filledDot + horzLine + horzLine + filledDot
+		return m.icons.filledDot + m.icons.horzLine + m.icons.horzLine + m.icons.filledDot
 	}
 
 	var sectionDurations []time.Duration
@@ -897,11 +948,11 @@ func renderStopsLine(c models.Connection, totalWidth int) string {
 
 	if totalSectionDuration == 0 || len(sectionDurations) == 0 {
 		// Fallback to equal distribution
-		return filledDot + strings.Repeat(horzLine+horzLine+hollowDot, c.Transfers) + horzLine + horzLine + filledDot
+		return m.icons.filledDot + strings.Repeat(m.icons.horzLine+m.icons.horzLine+m.icons.hollowDot, c.Transfers) + m.icons.horzLine + m.icons.horzLine + m.icons.filledDot
 	}
 
 	var sb strings.Builder
-	sb.WriteString(filledDot)
+	sb.WriteString(m.icons.filledDot)
 
 	usedChars := 0
 	for i, secDur := range sectionDurations {
@@ -916,11 +967,11 @@ func renderStopsLine(c models.Connection, totalWidth int) string {
 		lineChars = max(lineChars, 1)
 		usedChars += lineChars
 
-		sb.WriteString(strings.Repeat(horzLine, lineChars))
+		sb.WriteString(strings.Repeat(m.icons.horzLine, lineChars))
 		if i < len(sectionDurations)-1 {
-			sb.WriteString(hollowDot)
+			sb.WriteString(m.icons.hollowDot)
 		} else {
-			sb.WriteString(filledDot)
+			sb.WriteString(m.icons.filledDot)
 		}
 	}
 

@@ -19,6 +19,7 @@ func main() {
 	date := flag.String("date", "", "Pre-fill date (YYYY-MM-DD)")
 	timeStr := flag.String("time", "", "Pre-fill time (HH:MM)")
 	arrival := flag.Bool("arrival", false, "Use arrival time instead of departure time")
+	noNerdFont := flag.Bool("no-nerdfont", false, "Use Unicode fallback icons instead of Nerd Font icons")
 	showVersion := flag.BoolP("version", "v", false, "Print version and exit")
 
 	// --help
@@ -45,6 +46,7 @@ func main() {
 		Date:          *date,
 		Time:          *timeStr,
 		IsArrivalTime: *arrival,
+		NoNerdFont:    *noNerdFont,
 	}
 
 	m := views.InitialModel(cfg)
