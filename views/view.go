@@ -458,39 +458,46 @@ func (m *model) updateInputs(msg tea.Msg) tea.Cmd {
 
 			if len(s) == 1 && s >= "0" && s <= "9" {
 				switch len(val) {
+				// Year: YYYY (positions 0-3)
 				case 0:
 					if s > "2" {
 						return nil
 					}
-				case 1:
-					if val == "2" && s > "9" {
+				case 1, 2, 3:
+				// 1st month digit: auto-insert "-", validate (0 or 1)
+				case 4:
+					if s > "1" {
 						return nil
 					}
-				case 2, 3:
-				case 4:
 					t.SetValue(val + "-" + s)
 					t.SetCursor(len(val) + 2)
 					return nil
 				case 5:
-					if val[4] == '0' && s == "0" {
-						return nil
-					}
-					if val[4] == '1' && s > "2" {
-						return nil
-					}
+				// 2nd month digit: val = "YYYY-M#" where val[5] is 1st month digit
 				case 6:
+					if val[5] == '0' && s == "0" {
+						return nil // block month 00
+					}
+					if val[5] == '1' && s > "2" {
+						return nil // block months 13-19
+					}
+				// 1st day digit: auto-insert "-", validate (0-3)
 				case 7:
+					if s > "3" {
+						return nil
+					}
 					t.SetValue(val + "-" + s)
 					t.SetCursor(len(val) + 2)
 					return nil
 				case 8:
-					if val[7] == '0' && s == "0" {
-						return nil
-					}
-					if val[7] == '3' && s > "1" {
-						return nil
-					}
+				// 2nd day digit: val = "YYYY-MM-D#" where val[8] is 1st day digit
 				case 9:
+					if val[8] == '0' && s == "0" {
+						return nil // block day 00
+					}
+					if val[8] == '3' && s > "1" {
+						return nil // block days 32-39
+					}
 				default:
 					return nil
 				}
@@ -511,7 +518,7 @@ func (m *model) updateInputs(msg tea.Msg) tea.Cmd {
 			// Only process numeric runes for the following logic
 			if len(s) == 1 && s >= "0" && s <= "9" {
 				switch len(val) {
-				// Logic for each digit
+				// Hours: HH
 				case 0:
 					if s > "2" {
 						return nil
@@ -520,16 +527,16 @@ func (m *model) updateInputs(msg tea.Msg) tea.Cmd {
 					if val == "2" && s > "3" {
 						return nil
 					}
-				// Add `:` when typing third digit
+				// Minutes: auto-insert ":", validate 1st minute digit (0-5)
 				case 2:
-					t.SetValue(val + ":" + s)
-					t.SetCursor(5)
-					return nil
-				case 3:
 					if s > "5" {
 						return nil
 					}
-				case 4:
+					t.SetValue(val + ":" + s)
+					t.SetCursor(5)
+					return nil
+				// 2nd minute digit (0-9, no restriction)
+				case 3, 4:
 				default:
 					return nil
 				}
