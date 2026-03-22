@@ -2,6 +2,7 @@
 package views
 
 import (
+	_ "embed"
 	"fmt"
 	"strings"
 	"time"
@@ -14,6 +15,14 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+)
+
+var (
+	//go:embed sbb-logo.txt
+	sbbLogo string
+
+	//go:embed sbb-logo-nerdfont.txt
+	sbbLogoNerdFont string
 )
 
 const (
@@ -192,6 +201,7 @@ type model struct {
 	headerOrder   []focusable
 	inputs        []textinput.Model
 	icons         iconSet
+	noNerdFont    bool
 	isArrivalTime bool
 	connections   []models.Connection
 	loading       bool
@@ -215,6 +225,7 @@ func InitialModel(cfg Config) model {
 		},
 		inputs:        make([]textinput.Model, 4),
 		icons:         newIconSet(cfg.NoNerdFont),
+		noNerdFont:    cfg.NoNerdFont,
 		isArrivalTime: cfg.IsArrivalTime,
 	}
 
@@ -653,7 +664,7 @@ func (m model) renderResults() string {
 		if m.searched {
 			return "\n  No connections found."
 		}
-		return "\n  Enter stations above to see timetables"
+		return m.renderStartScreen()
 	}
 
 	var boxes []string
@@ -664,6 +675,25 @@ func (m model) renderResults() string {
 	}
 
 	return lipgloss.JoinVertical(lipgloss.Left, boxes...)
+}
+
+func (m model) renderStartScreen() string {
+	logo := sbbLogoNerdFont
+	if m.noNerdFont {
+		logo = sbbLogo
+	}
+	logo = strings.TrimRight(logo, "\n")
+
+	coloredLogo := noStyle.Foreground(sbbWhite).Render(logo)
+
+	text := noStyle.Foreground(sbbGray).Render("Enter stations above to see timetables")
+
+	block := lipgloss.JoinVertical(lipgloss.Center, text, "", coloredLogo)
+
+	width := m.contentWidth() - borderSize - (rsltMrgn * 2)
+	height := m.resultsHeight()
+
+	return lipgloss.Place(width, height, lipgloss.Center, lipgloss.Center, block)
 }
 
 func (m model) renderDetailedResult() string {
