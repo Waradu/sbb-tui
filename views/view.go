@@ -35,7 +35,6 @@ const (
 	// Layout dimensions
 	borderSize     = 2
 	hdrHeight      = 3
-	hdrElmtPadd    = 2
 	rsltMrgn       = 1
 	smplConnHeight = 9
 	smplConnMrgn   = 3
@@ -47,8 +46,10 @@ const (
 	fullConnPaddH = 3
 	fullConnPaddV = 1
 
-	minTermWidth  = 80
-	minTermHeight = hdrHeight + hdrElmtPadd + helpBarHeight + borderSize + smplConnHeight
+	// Minimum input width per From/To field so the header is still usable.
+	minInputWidth = 10
+
+	minTermHeight = hdrHeight + borderSize + helpBarHeight + borderSize + smplConnHeight
 )
 
 var (
@@ -398,9 +399,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+func (m model) minTermWidth() int {
+	return m.headerFixedWidth() + 2*minInputWidth
+}
+
 func (m model) View() string {
-	if m.width < minTermWidth || m.height < minTermHeight {
-		msg := fmt.Sprintf("Terminal too small (%dx%d)\nMinimum size: %dx%d", m.width, m.height, minTermWidth, minTermHeight)
+	if m.width < m.minTermWidth() || m.height < minTermHeight {
+		minW := m.minTermWidth()
+		msg := fmt.Sprintf("Terminal too small (%dx%d)\nMinimum size: %dx%d", m.width, m.height, minW, minTermHeight)
 		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center,
 			noStyle.Foreground(sbbRed).Bold(true).Render(msg))
 	}
@@ -431,11 +437,11 @@ func (m model) View() string {
 }
 
 func (m model) contentWidth() int {
-	return max(m.width-hdrElmtPadd, 0)
+	return max(m.width-borderSize, 0)
 }
 
 func (m model) resultsHeight() int {
-	return max(m.height-hdrHeight-hdrElmtPadd-helpBarHeight, 0)
+	return max(m.height-hdrHeight-borderSize-helpBarHeight, 0)
 }
 
 func (m model) maxVisibleConnections() int {
