@@ -193,6 +193,7 @@ type model struct {
 	width, height int
 	tabIndex      int
 	resultIndex   int
+	detailScrollY int
 	headerOrder   []focusable
 	inputs        []textinput.Model
 	icons         iconSet
@@ -367,11 +368,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "up":
 			if len(m.connections) > 0 && m.resultIndex > 0 {
 				m.resultIndex--
+				m.detailScrollY = 0
 			}
 		case "down":
 			if len(m.connections) > 0 && m.resultIndex < len(m.connections)-1 {
 				m.resultIndex++
+				m.detailScrollY = 0
 			}
+		case "shift+up":
+			if m.detailScrollY > 0 {
+				m.detailScrollY--
+			}
+		case "shift+down":
+			m.detailScrollY++
 		}
 
 	case SuggestionsMsg:
@@ -388,6 +397,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.connections = msg.connections
 		m.resultIndex = 0
+		m.detailScrollY = 0
 		if len(m.connections) == 0 {
 			m.errorMsg = "No connections found for the specified route."
 		}
@@ -759,9 +769,20 @@ func (m model) renderFullConnection(c models.Connection, width int) string {
 		}
 	}
 
-	content := strings.Join(lines, "\n")
 	boxHeight := max(m.resultsHeight()-borderSize-(fullConnPaddV*2), 0)
-	return detailedResultStyle.Width(width).Height(boxHeight).Render(content)
+
+	// Wrap and split into visual lines for scrolling.
+	content := strings.Join(lines, "\n")
+	wrapped := noStyle.Width(innerWidth).Render(content)
+	visLines := strings.Split(wrapped, "\n")
+
+	// Scroll and clamp to the visible area.
+	if len(visLines) > boxHeight {
+		scrollY := min(m.detailScrollY, len(visLines)-boxHeight)
+		visLines = visLines[scrollY : scrollY+boxHeight]
+	}
+
+	return detailedResultStyle.Width(width).Height(boxHeight).Render(strings.Join(visLines, "\n"))
 }
 
 func (m model) renderJourneySection(section models.Section, width int, isFirst, isLast bool) []string {
