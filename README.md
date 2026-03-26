@@ -4,9 +4,15 @@ TUI client for Switzerland's public transports timetables, inspidered by the SBB
 
 <img width="1382" height="1054" alt="Bildschirmfoto 2026-03-01 um 11 43 00" src="https://github.com/user-attachments/assets/f3600847-50ce-418b-b682-5249ee00ab6f" />
 
-## ❓Why
+## 🚀 Features
 
-> I often work in the train, passing through remote regions of Switzerland where I'll have to wait up to an entire minute to finally be able to load the SBB website/app and get the much needed information about my next connection (I have a cheap cellular data subscription). Someday I fell onto the incredible [Swiss public transport API](https://transport.opendata.ch/docs.html) and decided it was the perfect occasion to learn how to create TUIs.
+- 📍 **Any station**: search connections between any Swiss (and neighbouring) public transport stations
+- 🚆 **Any transport**: train, tram, bus, boat, cable cars (and even funiculars!)
+- 🧾 **Detailed journey view** with: transfers, platforms, delays, vehicle information and walk sections
+- ➡️ **Autocompletion** of station names
+- 🚩 **CLI flags** to pre-fill fields for quick lookups
+- 🧭 Clickable **Google Maps links** for walking sections
+- **<+>** SBB brand styling with Nerd Font **icons** ([Nerd Font](https://www.nerdfonts.com/) recommended, Unicode fallback via `--no-nerdfont`)
 
 ## 📦 Install
 
@@ -32,7 +38,7 @@ go build
 3. Add optional information such as **date**, **time**, and **whether** those are for departure or arrival.
 4. Press `Enter` to view the results (navigate with arrows).
 
-## ❓ Options
+## ⚙️ Options
 
 ```sh
 # sbb-tui --help
@@ -50,6 +56,10 @@ Flags:
       --to string     Pre-fill arrival station
   -v, --version       Print version and exit
 ```
+
+## ❓Why
+
+> I often work in the train, passing through remote regions of Switzerland where I'll have to wait up to an entire minute to finally be able to load the SBB website/app and get the much needed information about my next connection (I have a cheap cellular data subscription). Someday I fell onto the incredible [Swiss public transport API](https://transport.opendata.ch/docs.html) and decided it was the perfect occasion to learn how to create TUIs.
 
 ## 📝 TODO
 
