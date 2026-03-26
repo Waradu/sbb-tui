@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/Necrom4/sbb-tui/compare/v1.3.4...v1.4.0) (2026-03-26)
+
+
+### Features
+
+* add Windows .exe release build ([bcee98c](https://github.com/Necrom4/sbb-tui/commit/bcee98cb31386abe21d082a2850a03ede490e47b)), closes [#4](https://github.com/Necrom4/sbb-tui/issues/4)
+
 ## [1.3.4](https://github.com/Necrom4/sbb-tui/compare/v1.3.3...v1.3.4) (2026-03-25)
 
 
