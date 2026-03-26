@@ -189,6 +189,13 @@ type SuggestionsMsg struct {
 	err        error
 }
 
+const suggestDebounce = 300 * time.Millisecond
+
+type suggestTickMsg struct {
+	inputIndex int
+	seq        int
+}
+
 type model struct {
 	width, height int
 	tabIndex      int
@@ -205,6 +212,7 @@ type model struct {
 	searched      bool
 	lastFromQuery string
 	lastToQuery   string
+	suggestSeq    [2]int
 }
 
 func InitialModel(cfg Config) model {
@@ -384,6 +392,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "shift+down":
 			m.detailScrollY++
 		}
+
+	case suggestTickMsg:
+		// Fetch if no new keystroke has occurred since
+		if msg.seq == m.suggestSeq[msg.inputIndex] {
+			query := m.inputs[msg.inputIndex].Value()
+			return m, fetchSuggestionsCmd(msg.inputIndex, query)
+		}
+		return m, nil
 
 	case SuggestionsMsg:
 		if msg.err == nil {
@@ -567,11 +583,15 @@ func (m *model) updateInputs(msg tea.Msg) tea.Cmd {
 		m.inputs[i], cmds[i] = m.inputs[i].Update(msg)
 	}
 
-	// Trigger suggestion fetches for from/to inputs when value changes
+	// Debounce suggestion fetches for from/to inputs when value changes
 	if fromVal := m.inputs[0].Value(); fromVal != m.lastFromQuery {
 		m.lastFromQuery = fromVal
 		if len(fromVal) >= 2 {
-			cmds = append(cmds, fetchSuggestionsCmd(0, fromVal))
+			m.suggestSeq[0]++
+			seq := m.suggestSeq[0]
+			cmds = append(cmds, tea.Tick(suggestDebounce, func(time.Time) tea.Msg {
+				return suggestTickMsg{inputIndex: 0, seq: seq}
+			}))
 		} else {
 			m.inputs[0].SetSuggestions(nil)
 		}
@@ -579,7 +599,11 @@ func (m *model) updateInputs(msg tea.Msg) tea.Cmd {
 	if toVal := m.inputs[1].Value(); toVal != m.lastToQuery {
 		m.lastToQuery = toVal
 		if len(toVal) >= 2 {
-			cmds = append(cmds, fetchSuggestionsCmd(1, toVal))
+			m.suggestSeq[1]++
+			seq := m.suggestSeq[1]
+			cmds = append(cmds, tea.Tick(suggestDebounce, func(time.Time) tea.Msg {
+				return suggestTickMsg{inputIndex: 1, seq: seq}
+			}))
 		} else {
 			m.inputs[1].SetSuggestions(nil)
 		}
