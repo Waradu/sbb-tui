@@ -1,3 +1,11 @@
+# [1.6.0](https://github.com/Necrom4/sbb-tui/compare/v1.5.1...v1.6.0) (2026-03-27)
+
+
+### Features
+
+* **views:** add AcceptSuggestion keybinding for date/time fill ([15948a9](https://github.com/Necrom4/sbb-tui/commit/15948a969e721adddc5f426ecb557742657576e9))
+* **views:** fill date/time inputs when incomplete + ghost completion ([9e28b11](https://github.com/Necrom4/sbb-tui/commit/9e28b11db038a22207b508f8c99a52cafd51c551)), closes [#14](https://github.com/Necrom4/sbb-tui/issues/14)
+
 ## [1.5.1](https://github.com/Necrom4/sbb-tui/compare/v1.5.0...v1.5.1) (2026-03-26)
 
 
