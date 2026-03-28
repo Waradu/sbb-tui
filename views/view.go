@@ -1023,11 +1023,15 @@ func (m model) renderSimpleConnection(c models.Connection, index int, width int)
 	stopsLineWidth := max(width-stopsLineFixedWidth, stopsLineMinWidth)
 	stopsLine := m.styles.bold.Render(m.renderStopsLine(c, stopsLineWidth))
 
-	platformOrWalk := ""
-	if len(c.FromData.Platform) > 0 {
-		platformOrWalk = m.icons.plt + " " + m.styles.text.Render(c.FromData.Platform)
+	platformInfo := ""
+	platform := c.Sections[firstVehicle].Departure.Platform
+	if platform == "" {
+		platform = c.FromData.Platform
+	}
+	if platform != "" {
+		platformInfo = m.icons.plt + " " + m.styles.text.Render(platform)
 	} else if c.Sections[0].Walk != nil {
-		platformOrWalk = m.icons.wlk + " " + m.styles.text.Render(
+		platformInfo = m.icons.wlk + " " + m.styles.text.Render(
 			fmt.Sprintf("%vm", c.Sections[0].Arrival.Arrival.Sub(c.Sections[0].Departure.Departure).Minutes()),
 		)
 	}
@@ -1046,7 +1050,7 @@ func (m model) renderSimpleConnection(c models.Connection, index int, width int)
 		stopsLine,
 		arrival,
 		arrivalDelay,
-		platformOrWalk,
+		platformInfo,
 		strings.Repeat(" ", bottomLinePadding),
 		duration,
 	)
