@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/Necrom4/sbb-tui/compare/v1.7.0...v1.7.1) (2026-03-28)
+
+
+### Bug Fixes
+
+* **config:** add missing colors ([d86e9a3](https://github.com/Necrom4/sbb-tui/commit/d86e9a337b5d3f6a540b9a854446c5565913add6))
+
 # [1.7.0](https://github.com/Necrom4/sbb-tui/compare/v1.6.0...v1.7.0) (2026-03-28)
 
 
