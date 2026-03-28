@@ -37,9 +37,21 @@ func DefaultTheme() Theme {
 }
 
 func configFilePath() (string, error) {
-	cfgDir, err := os.UserConfigDir()
+	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
+	}
+
+	// Prefer $HOME/.config/
+	primary := filepath.Join(home, ".config", "sbb-tui", "config.yaml")
+	if _, err := os.Stat(primary); err == nil {
+		return primary, nil
+	}
+
+	// Fall back to OS default config path
+	cfgDir, err := os.UserConfigDir()
+	if err != nil {
+		return primary, nil
 	}
 	return filepath.Join(cfgDir, "sbb-tui", "config.yaml"), nil
 }
