@@ -25,6 +25,8 @@ go install github.com/necrom4/sbb-tui
 yay -S sbb-tui
 ```
 
+> or download your preferred executable from [Releases](https://github.com/Necrom4/sbb-tui/releases)
+
 ## Build from source
 
 ```sh
