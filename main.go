@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/necrom4/sbb-tui/config"
+	"github.com/necrom4/sbb-tui/utils"
 	"github.com/necrom4/sbb-tui/views"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -42,18 +43,26 @@ func main() {
 	}
 
 	if *showVersion {
-		fmt.Printf("sbb-tui v%s\n", version)
+		fmt.Printf("sbb-tui %s\n", version)
 		os.Exit(0)
 	}
 
+	latest, err := utils.NewerVersion(version)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "warning: could not check for update:", err)
+		os.Exit(1)
+	}
+
 	cfg := config.Config{
-		From:          *from,
-		To:            *to,
-		Date:          *date,
-		Time:          *timeStr,
-		IsArrivalTime: *arrival,
-		NoNerdFont:    *noNerdFont,
-		Theme:         theme,
+		From:           *from,
+		To:             *to,
+		Date:           *date,
+		Time:           *timeStr,
+		IsArrivalTime:  *arrival,
+		NoNerdFont:     *noNerdFont,
+		Theme:          theme,
+		NewerVersion:   "v1.9.0",
+		CurrentVersion: version + latest,
 	}
 
 	m := views.InitialModel(cfg)

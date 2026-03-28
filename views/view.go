@@ -215,23 +215,25 @@ type suggestTickMsg struct {
 }
 
 type model struct {
-	width, height int
-	tabIndex      int
-	resultIndex   int
-	detailScrollY int
-	headerOrder   []focusable
-	inputs        []textinput.Model
-	icons         iconSet
-	styles        styles
-	noNerdFont    bool
-	isArrivalTime bool
-	connections   []models.Connection
-	loading       bool
-	errorMsg      string
-	searched      bool
-	lastFromQuery string
-	lastToQuery   string
-	suggestSeq    [2]int
+	width, height  int
+	tabIndex       int
+	resultIndex    int
+	detailScrollY  int
+	headerOrder    []focusable
+	inputs         []textinput.Model
+	icons          iconSet
+	styles         styles
+	noNerdFont     bool
+	isArrivalTime  bool
+	connections    []models.Connection
+	loading        bool
+	errorMsg       string
+	searched       bool
+	lastFromQuery  string
+	lastToQuery    string
+	suggestSeq     [2]int
+	newerVersion   string
+	currentVersion string
 }
 
 func InitialModel(cfg config.Config) model {
@@ -246,11 +248,13 @@ func InitialModel(cfg config.Config) model {
 			{KindInput, "time", 3},
 			{KindButton, "search", -1},
 		},
-		inputs:        make([]textinput.Model, 4),
-		icons:         newIconSet(cfg.NoNerdFont),
-		styles:        newStyles(cfg.Theme),
-		noNerdFont:    cfg.NoNerdFont,
-		isArrivalTime: cfg.IsArrivalTime,
+		inputs:         make([]textinput.Model, 4),
+		icons:          newIconSet(cfg.NoNerdFont),
+		styles:         newStyles(cfg.Theme),
+		noNerdFont:     cfg.NoNerdFont,
+		isArrivalTime:  cfg.IsArrivalTime,
+		newerVersion:   cfg.NewerVersion,
+		currentVersion: cfg.CurrentVersion,
 	}
 
 	now := time.Now()
@@ -719,7 +723,11 @@ func (m model) renderHelpBar() string {
 		parts = append(parts, m.styles.helpKey.Render(k.key)+" "+m.styles.helpDesc.Render(k.desc))
 	}
 
-	return " " + strings.Join(parts, "   ")
+	left := " " + strings.Join(parts, "   ")
+	right := fmt.Sprintf("SBB-TUI %s", m.currentVersion)
+
+	gap := max(1, m.width-lipgloss.Width(left)-lipgloss.Width(right))
+	return left + strings.Repeat(" ", gap-1) + m.styles.ghostText.Render(right)
 }
 
 func (m model) renderHeaderItem(idx int) string {
@@ -797,7 +805,13 @@ func (m model) renderStartScreen() string {
 
 	text := m.styles.ghostText.Render("Enter stations above to see timetables")
 
+	newerVersion := m.styles.active.Render(fmt.Sprintf("Update available: %s", m.newerVersion))
+
 	block := lipgloss.JoinVertical(lipgloss.Center, text, "", coloredLogo)
+
+	if m.newerVersion != "" {
+		block = lipgloss.JoinVertical(lipgloss.Center, block, "", newerVersion)
+	}
 
 	width := max(m.contentWidth()-borderSize-(rsltMrgn*2), 0)
 	height := m.resultsHeight()
