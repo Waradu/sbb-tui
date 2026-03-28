@@ -23,6 +23,11 @@ brew install necrom4/tap/sbb-tui
 go install github.com/necrom4/sbb-tui
 ```
 
+```
+# aur
+yay -S sbb-tui
+```
+
 ## Build from source
 
 ```sh
