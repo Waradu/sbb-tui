@@ -31,7 +31,7 @@ func DefaultTheme() Theme {
 		Muted:      "#888888",
 		Vehicle:    "#315086",
 		Company:    "#484848",
-		Warning:    "#3A7446",
+		Warning:    "#dc5e4a",
 		KeysBg:     "#484848",
 	}
 }
