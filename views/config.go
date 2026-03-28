@@ -29,9 +29,9 @@ func DefaultTheme() Theme {
 		Text:    "#FFFFFF",
 		Border:  "#862010",
 		Muted:   "#888888",
-		Vehicle: "#315086",
+		Vehicle: "#2E3279",
 		Company: "#484848",
-		Warning: "#dc5e4a",
+		Warning: "#D82E20",
 		KeysBg:  "#484848",
 	}
 }
